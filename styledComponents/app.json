@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "revisaoHooks",
-    "slug": "revisaoHooks",
+    "name": "styledComponents",
+    "slug": "styledComponents",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

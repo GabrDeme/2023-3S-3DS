@@ -1,18 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// import { useFonts, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
+import { Container } from './src/components/Container/Container';
+import { Title, ButtonText } from './src/components/Title/Title';
+import { Button, DecrementButton } from './src/components/Button/Button';
+import { Image } from 'react-native';
+
+// import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
-
-  // let [fontsLoaded, fontError] = useFonts({
-  //   Poppins_600SemiBold
-  // });
-
-  // if (!fontsLoaded && !fontError) {
-  //   return null;
-  // }
-
   //USE STATE - hook
   const [count, setCount] = useState(0);
 
@@ -32,37 +27,23 @@ export default function App() {
   }, [count])
 
   return (
-    <View style={styles.container}>
-      {/* <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 25 }} >Contador: {count}</Text> */}
-      <Text>Contador: {count}</Text>
-      <View style={styles.buttons}>
-        <TouchableOpacity onPress={increment}>
-          <Text style={styles.textButton}>Incrementar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={decrement}>
-          <Text style={styles.textButton}>Decrementar</Text>
-        </TouchableOpacity>
-      </View>
+    <Container>
+      <Title>Contador: {count}</Title>
+      {/* <Image style={{
+        resizeMode: 'contain',
+        height: 200,
+        width: 200,
+        paddingBottom: 250,
+      }}
+        source={require('./calculadora.png')}
+      /> */}
+      <Button onPress={increment}>
+        <ButtonText>Incrementar</ButtonText>
+      </Button>
+      <DecrementButton onPress={decrement}>
+        <ButtonText>Decrementar</ButtonText>
+      </DecrementButton>
       <StatusBar style="auto" />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#87ceeb',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttons: {
-    backgroundColor: 'blue', 
-    borderRadius: 15,
-    marginBottom: 3,
-
-  },
-  textButton: {
-    color: 'white'
-  }
-});
