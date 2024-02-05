@@ -7,24 +7,23 @@ export function HomeScreen() {
 
     const [cep, setCep] = useState();
     const [endereco, setEndereco] = useState({});
-
-    useEffect(() => {
-        if (cep) {
-            buscarEndereco();
-        }
-        else {
-
-        }
-    }, [cep]);
+    const [estado, setEstado] = useState()
 
     const buscarEndereco = async () => {
         try {
             const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
             setEndereco(response.data)
+             const estado = await axios.get (`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${response.data.uf}`)
+            setEstado(estado.data.nome);
         } catch (error) {
             console.log(error);
         }
     }
+
+    function apagarEndereco(){
+        setEndereco({})
+    }
+
     return (
         <ScrollForm>
             <ContainerForm>
@@ -35,6 +34,7 @@ export function HomeScreen() {
                     editable={true}
                     onChangeText={text => setCep(text)}
                     fieldValue={cep}
+                    onBlur={cep ? buscarEndereco : apagarEndereco}
                 />
                 <BoxInput
                     textLabel="Logradouro"
@@ -57,7 +57,7 @@ export function HomeScreen() {
                         textLabel="Estado"
                         placeholder="Estado..."
                         editable={true}
-                        // fieldValue={(endereco.uf)}
+                        fieldValue={estado}
                     />
                     <BoxInput
                         fieldWidth={25}
