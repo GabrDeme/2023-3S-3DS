@@ -1,89 +1,138 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import {
+  requestForegroundPermissionsAsync, // Solicite o acesso a localizacao
+  getCurrentPositionAsync, // Recebe a localizacao
+
+  watchPositionAsync, //monitora o posicionamento
+  LocationAccuracy, //
+} from 'expo-location';
 import MapViewDirections from 'react-native-maps-directions';
-import { 
-  requestForegroundPermissionsAsync, //solicita o acesso a localização
-  getCurrentPositionAsync, //recebe a localização atual 
-} from 'expo-location'
-import  { mapsKey } from './utils/mapsApiKey'
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { mapskey } from './utils/mapsApiKey';
 
 export default function App() {
-  const [initialPosition, setInitialPosition] = useState(null)
 
-  async function CapturarLocalizacao() {
-    const {granted} = await requestForegroundPermissionsAsync()
+  const mapReference = useRef(null)
+  const [initialPosition, setInitialPosition] = useState();
+  const [finalPosition, setFinalPosition] = useState({
+    latitude: -23.532,
+    longitude: -46.792,
+  })
 
-    if ( granted ) {
+  async function LocationCapture() {
+    const { granted } = await requestForegroundPermissionsAsync()
+
+    if (granted) {
       const captureLocation = await getCurrentPositionAsync()
 
-      setInitialPosition( captureLocation )
+      setInitialPosition(captureLocation)
+      // console.log( initialPosition)
 
     }
   }
 
   useEffect(() => {
-    CapturarLocalizacao()
+    LocationCapture()
+
+    //MONITORA O TEMPO REAL
+    watchPositionAsync({
+      accuracy: LocationAccuracy.Highest,
+      timeInterval: 1000,
+      distanceInterval: 1,
+    }, async (response) => {
+      //RECEBE E GUARDA A NOVA LOCALIZAÇÃO
+      await setInitialPosition(response)
+
+      mapReference.current?.animateCamera({
+        pitch: 60,
+        center: response.coords
+      })
+    })
   }, [1000])
+
+  useEffect(() => {
+    RecarregarVisualizacaoMapa()
+  }, [initialPosition])
+
+  // VER O TRAJETO NO MAPA DE LONGA DISTÂNCIA
+  async function RecarregarVisualizacaoMapa() {
+    if (mapReference.current && initialPosition) {
+      await mapReference.current.fitToCoordinates(
+        [
+          { latitude: initialPosition.coords.latitude, longitude: initialPosition.coords.longitude },
+          { latitude: finalPosition.latitude, longitude: finalPosition.longitude }
+        ],
+        {
+          edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
+          animated: true
+        }
+      )
+    }
+  }
+
   return (
     <View style={styles.container}>
-
       {
-        initialPosition != null ? (
-        <MapView
-        initialRegion={{
-          latitude: initialPosition.coords.latitude,
-          longitude: initialPosition.coords.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        }}
-        provider={PROVIDER_GOOGLE}
-        customMapStyle={ grayMapStyle }
-        style={ styles.map }
+        initialPosition ? (
+          <MapView
+            ref={mapReference}
 
-      >
 
-        <Marker
-          coordinate={{
-            latitude: initialPosition.coords.latitude,
-            longitude: initialPosition.coords.longitude,
-          }}
-          title='Posição inicial'
-          description='Regi'
-        />
+            initialRegion={{
+              latitude: initialPosition.coords.latitude,
+              longitude: initialPosition.coords.longitude,
+              longitudeDelta: 0.005,
+              latitudeDelta: 0.005
+            }}
+            provider={PROVIDER_GOOGLE}
+            customMapStyle={grayMapStyle}
+            style={styles.map}
+          >
 
-        <MapViewDirections
-          origin={ initialPosition.coords }
-          destination={{
-            latitude: -25.5469,
-            longitude: -54.5882,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          }}
-          strokeWidth={5}
-          strokeColor='#496BBA'
-          apikey={ mapsKey }
-        />
+            {/* MARCADOR INICIAL*/}
+            <Marker
+              coordinate={{
+                latitude: initialPosition.coords.latitude,
+                longitude: initialPosition.coords.longitude,
+              }}
+              title='Posição inicial'
+              pinColor='purple'
+            />
 
-        <Marker
-          coordinate={{
-            latitude: -25.5469,
-            longitude: -54.5882,
-          }}
-          title='Posição final'
-          description='naldo'
-        />
+              {/* LINHA DE TRAJETO */}
+            <MapViewDirections
+              origin={initialPosition.coords}
+              destination={{
+                latitude: -23.5329,
+                longitude: -46.7926,
+                longitudeDelta: 0.005,
+                latitudeDelta: 0.005,
+              }}
+              strokeWidth={5}
+              strokeColor='#496BBA'
+              apikey={mapskey}
+            />
 
-      </MapView>
-      ) : (
-        <>
-          <Text>Localização não encontrada</Text>
-          <ActivityIndicator/>
-        </>
-      )
+            {/* MARCADOR DE DESTINO*/}
+            <Marker
+              coordinate={{
+                latitude: -23.5329,
+                longitude: -46.7926,
+              }}
+              title='Posição inicial'
+              pinColor='blue'
+            />
+          </MapView>
+
+        ) : (
+          <>
+            <Text>Finding location</Text>
+            <ActivityIndicator />
+          </>
+        )
       }
-
-      
     </View>
   );
 }
@@ -95,14 +144,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  map : {
+  map: {
     flex: 1,
-    width: '100%' 
-  }
+    width: '100%'
+  },
 });
-
-
 
 
 const grayMapStyle = [
