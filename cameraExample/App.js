@@ -29,15 +29,15 @@ export default function App() {
     }
   }
 
-  function ClearPhoto(){
-    setPhoto( null )
+  function ClearPhoto() {
+    setPhoto(null)
 
-    setOpenModal( false )
+    setOpenModal(false)
   }
 
-  async function SavePhoto(){
-    if( photo ) {
-      await MediaLibrary.createAssetAsync( photo ).then( () => {
+  async function SavePhoto() {
+    if (photo) {
+      await MediaLibrary.createAssetAsync(photo).then(() => {
         alert('Sucesso', 'Foto salva na galeria')
       }).catch(error => {
         alert("Erro ao processar função")
